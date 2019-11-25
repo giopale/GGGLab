@@ -1,13 +1,15 @@
 #include <iostream>
+#include "Import.C"
 
-struct slimport_data_t {
+
+/*struct slimport_data_t {
 	ULong64_t	timetag; //time stamp
 	UInt_t		baseline;
 	UShort_t	qshort; //integration with shorter time
 	UShort_t	qlong; //integration with longer time
 	UShort_t	pur;
 	UShort_t	samples[4096];
-};
+};*/
 
 
 void CalibrateHisto(TH1F *h_uncal, float m, float q) { //Re-scaling of axis, as in the slides
@@ -34,7 +36,7 @@ double Calib(double p, float m, float q){
 
 
 
-TH1F* getHistoForChannelFromTree(char *name_file, short dgtz, short chan, int numBins, double minX, double maxX) {
+/*TH1F* getHistoForChannelFromTree(char *name_file, short dgtz, short chan, int numBins, double minX, double maxX) {
 	// variables
 	slimport_data_t indata;
 	TFile *infile = new TFile(name_file);
@@ -51,12 +53,12 @@ TH1F* getHistoForChannelFromTree(char *name_file, short dgtz, short chan, int nu
 	// return
 	return h_spectrum;
 }
-
+*/
 
 void CalibAnalysis(){
 
 
-TH1F *h1 = getHistoForChannelFromTree((char *)"spec0_d1.root",1,0,1000,400,26000);
+TH1F *h0 = getHistoForChannelFromTree((char *)"spec0_d1.root",1,0,1000,400,26000);
 TCanvas *c1 = new TCanvas("c1");
 
 
@@ -64,11 +66,11 @@ TCanvas *c1 = new TCanvas("c1");
 	TSpectrum *s = new TSpectrum(30);
 	int nPeaks;
 	float *na_bin;
-	nPeaks = s->Search(h1,20,"nobackground",0.05);
+	nPeaks = s->Search(h0,20,"nobackground",0.05);
 	double *na_bin_double = s->GetPositionX();
 	double *na_bin_doubleY = s->GetPositionY();
 
-	h1->Draw();
+	h0->Draw();
 
 	for(int i=0 ; i<nPeaks; i++){
 	na_bin[i]=na_bin_double[i];
@@ -77,7 +79,7 @@ TCanvas *c1 = new TCanvas("c1");
 
 
 
-cout <<na_bin[0] << "  " <<na_bin[1]  <<endl;
+	cout <<na_bin[0] << "  " <<na_bin[1]  <<endl;
 
 	
 
@@ -101,7 +103,10 @@ cout <<na_bin[0] << "  " <<na_bin[1]  <<endl;
 	cout  <<" m:  " << m <<" q: " <<q  <<endl;
 
 // call the function to calibrate the histogram
-	CalibrateHisto(h1,m,q);
-	//h1->Draw();
+	CalibrateHisto(h0,m,q);
+	//h0->Draw();
+
+	Import();
+	h1->Draw();
 
 }
