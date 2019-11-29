@@ -30,7 +30,7 @@ TH1F* getHistoForChannelFromTree(char *name_file, short dgtz, short chan, int nu
 	return h_spectrum;
 }
 
-void Import(){
+TH1F* Import(){
 	
 	TH1F *h1 = getHistoForChannelFromTree((char *)"spec0_d1.root",1,0,1000,400,26000);		//DETECTOR 1
 	TH1F *h2 = getHistoForChannelFromTree((char *)"spec0_d2.root",0,1,1000,0,26000);		//DETECTOR 2
@@ -39,6 +39,7 @@ void Import(){
 
 	TCanvas *c1 = new TCanvas("c1");
 int num;
+/*
  cout <<"Quale istogramma vuoi visualizzare? (premi da 1 a 8)\n"<<endl;
  cin >>num;
   
@@ -63,6 +64,8 @@ switch(num)
 	break;
 
 }
+*/
+return h1;
 
 
 	//h2->Draw();

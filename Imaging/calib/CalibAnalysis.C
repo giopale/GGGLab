@@ -106,7 +106,23 @@ TCanvas *c1 = new TCanvas("c1");
 	CalibrateHisto(h0,m,q);
 	//h0->Draw();
 
-	Import();
+	//TH1F* h1=Import(); //questo funziona ma non ti serve usarla 
+	// basta direttamente chiamare gethisto
+	//se invece vuoi usare anche tutto il resto di import devi farti
+	//ritornare un doppio puntator o un array di puntatori
+	//alla peggio puoi semplicemente rimettere lo swith di import qui 
+	//volendo ce un modo per linkare i ptr tra una funzione e l'altra
+	//ma è "rischioso " perchè dipende come lo interpreta in compiler
+	//ultima alternativa è chiamre import dandogli in pasto i parametri
+	//che ti danno il particolare istogramma o quello che vuoi fare poi
+
+	TH1F *h1 = getHistoForChannelFromTree((char *)"spec0_d1.root",1,0,1000,400,26000);		//DETECTOR 1
+	TH1F *h2 = getHistoForChannelFromTree((char *)"spec0_d2.root",0,1,1000,0,26000);		//DETECTOR 2
+	TH1F *h3 = getHistoForChannelFromTree((char *)"spec0_d3.root",0,2,1000,0,26000);		//DETECTOR 3
+	TH1F *h4 = getHistoForChannelFromTree((char *)"spec0_d4.root",0,3,1000,1200,26000);		//DETECTOR 3
+
+	h1->SetTitle("sugo estremo");
 	h1->Draw();
+
 
 }
