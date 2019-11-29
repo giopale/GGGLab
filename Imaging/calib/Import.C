@@ -7,9 +7,12 @@ struct slimport_data_t {
 	UShort_t	samples[4096];
 };
 
-struct histo{
+struct H_data{
 	TH1F* h1;
-	TH1F* h2;
+	Ushort_t acqtime;
+	ULong_t resolution;
+	TF1* calibfun;
+	TGraphErrors* calibgraph; 
 };
 
 TH1F* getHistoForChannelFromTree(char *name_file, short dgtz, short chan, int numBins, double minX, double maxX) {
