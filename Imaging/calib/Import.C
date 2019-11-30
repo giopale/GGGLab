@@ -39,7 +39,7 @@ struct slimport_data_t {
 
 struct H_data
 {
-	char* filename;
+	const char* filename;
 	UInt_t dgtz;
 	UInt_t ch;
 	ULong64_t acqtime;
@@ -50,16 +50,16 @@ struct H_data
 };
 
 
-H_data getHistoForChannelFromTree(char *name_file, short dgtz, short chan, int numBins, double minX, double maxX) {
+H_data getHistoForChannelFromTree(const char *name_file, short dgtz, short chan, int numBins, double minX, double maxX) {
 	// variables
 	slimport_data_t indata;
 	H_data histo;
 	//setting title 
 	TFile *infile = new TFile(name_file);
-	string Tree = " Tree=" + to_string(dgtz)+ " * ";
-	string Bran = " Ch=" + to_string(chan);
+	string Tree = " Tree= " + to_string(dgtz)+ " * ";
+	string Bran = " Ch= " + to_string(chan);
 	string ReadFile0(name_file);
-	string ReadFile = ReadFile0 + " * ";
+	string ReadFile = "File= " + ReadFile0 + " * ";
 	string titleString = ReadFile + Tree +Bran;
 
 
@@ -88,7 +88,7 @@ H_data getHistoForChannelFromTree(char *name_file, short dgtz, short chan, int n
 	histo.spectrum=h_temp;
 
 	
-	if(histo.spectrum){cout <<"Spectrum acquired -> "<<ReadFile0 <<" tree "<< dgtz <<" channel " << chan << endl;}
+	if(histo.spectrum){cout <<"\n*** File: "<<ReadFile0 <<", tree: "<< dgtz <<", channel: " << chan <<" *** Spectrum acquired ***"<< endl;}
 	return histo;
 }
 
