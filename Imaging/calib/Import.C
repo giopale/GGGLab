@@ -1,3 +1,33 @@
+#include <Riostream.h>
+#include <stdlib.h>
+#include <TROOT.h>
+#include <TSystem.h>
+#include "TGeoManager.h"
+#include "TNtuple.h"
+#include "TFile.h"
+#include "TH1F.h"
+#include "TH2F.h"
+#include "TTree.h"
+#include "TCanvas.h"
+#include "TGraph.h"
+#include "TGraphErrors.h"
+#include "TView.h"
+#include "TF1.h"
+#include "TGeometry.h"
+#include "TClonesArray.h"
+#include "TPolyLine3D.h"
+#include "TPolyMarker3D.h"
+#include "TGeoPhysicalNode.h"
+#include "TParticle.h"
+#include "TRandom2.h"
+#include "TView3D.h"
+#include "TLine.h"
+#include "Math/ProbFuncMathCore.h"
+#include "TAxis.h"
+#include <stdio.h>
+#include <cstdio>
+#include <string>
+
 struct slimport_data_t {
 	ULong64_t	timetag; //time stamp
 	UInt_t		baseline;
@@ -8,68 +38,56 @@ struct slimport_data_t {
 };
 
 struct H_data{
-	TH1F* h1;
-	Ushort_t acqtime;
-	ULong_t resolution;
+	char* filename;
+	UInt_t dgtz;
+	UInt_t ch;
+	TH1F* spectrum;
+	ULong64_t acqtime;
+	ULong64_t resolution;
 	TF1* calibfun;
 	TGraphErrors* calibgraph; 
 };
 
-TH1F* getHistoForChannelFromTree(char *name_file, short dgtz, short chan, int numBins, double minX, double maxX) {
+
+H_data getHistoForChannelFromTree(char *name_file, short dgtz, short chan, int numBins, double minX, double maxX) {
 	// variables
 	slimport_data_t indata;
+	H_data histo;
+	//setting title 
 	TFile *infile = new TFile(name_file);
+	string Tree = " Tree=" + to_string(dgtz)+ " * ";
+	string Bran = " Ch=" + to_string(chan);
+	string ReadFile0(name_file);
+	string ReadFile = ReadFile0 + " * ";
+	string titleString = ReadFile + Tree +Bran;
+
+
+	const char *GraphTitle = titleString.c_str();
+	//cout <<"Il titolo e` "<<stringax <<endl;
+	//string title = name_file + "-" + "dgtz" + std::to_string(dgtz) + "_" + "ch" + std::to_string(chan);
 	TTree *intree = (TTree*)infile->Get(Form("acq_tree_%d",dgtz));
 	TBranch *inbranch = intree->GetBranch(Form("acq_ch%d",chan));
+
+	TH1F* h_temp = new TH1F("h123",GraphTitle,numBins,minX,maxX);
 	inbranch->SetAddress(&indata.timetag);
-	TH1F *h_spectrum = new TH1F("h_spectrum","Total spectrum",numBins,minX,maxX);
+	ULong64_t time =0;
 	// histogram filling
 	for (int i=0; i<inbranch->GetEntries(); i++) {
 		inbranch->GetEntry(i);
-		h_spectrum->Fill(indata.qlong);
+		h_temp->Fill(indata.qlong);
+		time = indata.timetag; 
 		
 	}
+
 	// return
-	return h_spectrum;
-}
+	histo.acqtime = time * 4e-9;
+	string timestr = to_string(histo.acqtime);
+	titleString = titleString + " * " + " Time = " +timestr + "s";
+	h_temp->SetTitle(titleString.c_str());
+	histo.spectrum=h_temp;
 
-TH1F* Import(){
 	
-	TH1F *h1 = getHistoForChannelFromTree((char *)"spec0_d1.root",1,0,1000,400,26000);		//DETECTOR 1
-	TH1F *h2 = getHistoForChannelFromTree((char *)"spec0_d2.root",0,1,1000,0,26000);		//DETECTOR 2
-	TH1F *h3 = getHistoForChannelFromTree((char *)"spec0_d3.root",0,2,1000,0,26000);		//DETECTOR 3
-	TH1F *h4 = getHistoForChannelFromTree((char *)"spec0_d4.root",0,3,1000,1200,26000);		//DETECTOR 3
-
-	TCanvas *c1 = new TCanvas("c1");
-int num;
-/*
- cout <<"Quale istogramma vuoi visualizzare? (premi da 1 a 8)\n"<<endl;
- cin >>num;
-  
-
-switch(num)
-{
-	case 1:
-	h1->SetTitle("h1");
-	h1->Draw();
-	break;
-	case 2:
-	h2->SetTitle("h2");
-	h2->Draw();
-	break;
-	case 3:
-	h3->SetTitle("h3");
-	h3->Draw();
-	break;
-	case 4:
-	h4->SetTitle("h4");
-	h4->Draw();
-	break;
-
+	if(histo.spectrum){cout <<"Spectrum "<<ReadFile0 <<" tree "<< dgtz <<" channel " << chan <<" acquired"<< endl;}
+	return histo;
 }
-*/
-return h1;
 
-
-	//h2->Draw();
-}

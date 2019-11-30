@@ -1,15 +1,6 @@
-#include <iostream>
 #include "Import.C"
 
 
-/*struct slimport_data_t {
-	ULong64_t	timetag; //time stamp
-	UInt_t		baseline;
-	UShort_t	qshort; //integration with shorter time
-	UShort_t	qlong; //integration with longer time
-	UShort_t	pur;
-	UShort_t	samples[4096];
-};*/
 
 
 void CalibrateHisto(TH1F *h_uncal, float m, float q) { //Re-scaling of axis, as in the slides
@@ -27,12 +18,19 @@ void CalibrateHisto(TH1F *h_uncal, float m, float q) { //Re-scaling of axis, as 
 	    h_uncal->SetXTitle("keV");
 };
 
+//funzione di calibrazione CHANNELS -> KEV
 double Calib(double p, float m, float q){
 	double x = m*p + q;
 	return x;
 
 }
 
+// funzione di calibrazione inversa KEV -> CHANNELS
+double invCalib(double y, float m, float q){
+	double p = (y - q)/m;
+	return p;
+
+}
 
 
 
@@ -58,9 +56,37 @@ double Calib(double p, float m, float q){
 void CalibAnalysis(){
 
 
-TH1F *h0 = getHistoForChannelFromTree((char *)"spec0_d1.root",1,0,1000,400,26000);
-TCanvas *c1 = new TCanvas("c1");
+/*string calibNames[8];
+for(int i =0; i<8 ;i++)
+{
+	calibNames[i]= "spec0_d" + to_string(i+1) +".root";
+}*/
 
+//Retrieving all H_data structures from files
+int dgtz = 1;
+int chan =0;
+
+
+H_data h1_data = getHistoForChannelFromTree((char *)"spec0_d1.root",1,0,1000,400,26000);		//DETECTOR ;
+
+//setting the calibration graph title:
+const char* filename = (char *)"spec0_d1.root";
+string tempTitle(filename);
+string Tree = " Tree=" + to_string(dgtz)+ " * ";
+string Bran = " Ch=" + to_string(chan);
+tempTitle = tempTitle + Tree + Bran +" calibration";
+const char* calibTitle = tempTitle.c_str();
+
+if(h1_data.spectrum){cout << "Beginning calibration..." << endl; }
+TCanvas *c1 = new TCanvas("c1");
+//h1_data.spectrum->Draw();
+
+
+
+
+TH1F *h0 = (TH1F*)h1_data.spectrum->Clone();
+TCanvas *c123 = new TCanvas("c123");
+gStyle->SetOptStat("i");
 
 // search the peaks
 	TSpectrum *s = new TSpectrum(30);
@@ -70,17 +96,21 @@ TCanvas *c1 = new TCanvas("c1");
 	double *na_bin_double = s->GetPositionX();
 	double *na_bin_doubleY = s->GetPositionY();
 
-	h0->Draw();
-
-	for(int i=0 ; i<nPeaks; i++){
+	
+	for(int i=0 ; i< nPeaks; i++){
 	na_bin[i]=na_bin_double[i];
 	
 	}
-
-
-
-	cout <<na_bin[0] << "  " <<na_bin[1]  <<endl;
-
+	if(nPeaks!=0){
+		if( nPeaks >2 ){
+			cout << "Calibration error: more than two peaks detected." <<endl;
+		}
+	}
+	else{
+		if(na_bin[1]<na_bin[2]){
+			cout<< "Program terminated due to a calibration problem: wrong peaks order\n" <<endl;
+		}	
+	}
 	
 
 	// fit the peaks with the Na energies
@@ -92,7 +122,7 @@ TCanvas *c1 = new TCanvas("c1");
 	graphErr->Fit(fitfun);
 	graphErr->SetMarkerStyle(47);
 	TCanvas *c2 = new TCanvas("c2");
-	graphErr->SetTitle("Calibration");
+	graphErr->SetTitle(calibTitle);
 	graphErr->Draw();
 
 
@@ -116,13 +146,13 @@ TCanvas *c1 = new TCanvas("c1");
 	//ultima alternativa è chiamre import dandogli in pasto i parametri
 	//che ti danno il particolare istogramma o quello che vuoi fare poi
 
-	TH1F *h1 = getHistoForChannelFromTree((char *)"spec0_d1.root",1,0,1000,400,26000);		//DETECTOR 1
-	TH1F *h2 = getHistoForChannelFromTree((char *)"spec0_d2.root",0,1,1000,0,26000);		//DETECTOR 2
-	TH1F *h3 = getHistoForChannelFromTree((char *)"spec0_d3.root",0,2,1000,0,26000);		//DETECTOR 3
-	TH1F *h4 = getHistoForChannelFromTree((char *)"spec0_d4.root",0,3,1000,1200,26000);		//DETECTOR 3
+	// TH1F *h1 = getHistoForChannelFromTree((char *)"spec0_d1.root",1,0,1000,400,26000);		//DETECTOR 1
+	// TH1F *h2 = getHistoForChannelFromTree((char *)"spec0_d2.root",0,1,1000,0,26000);		//DETECTOR 2
+	// TH1F *h3 = getHistoForChannelFromTree((char *)"spec0_d3.root",0,2,1000,0,26000);		//DETECTOR 3
+	// TH1F *h4 = getHistoForChannelFromTree((char *)"spec0_d4.root",0,3,1000,1200,26000);		//DETECTOR 3
 
-	h1->SetTitle("sugo estremo");
-	h1->Draw();
+	// h1->SetTitle("sugo estremo");
+	// h1->Draw();
 
 
 }
