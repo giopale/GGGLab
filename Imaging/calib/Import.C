@@ -37,15 +37,16 @@ struct slimport_data_t {
 	UShort_t	samples[4096];
 };
 
-struct H_data{
+struct H_data
+{
 	char* filename;
 	UInt_t dgtz;
 	UInt_t ch;
-	TH1F* spectrum;
 	ULong64_t acqtime;
 	ULong64_t resolution;
 	TF1* calibfun;
-	TGraphErrors* calibgraph; 
+	TGraphErrors* calibgraph;
+	TH1F* spectrum; 
 };
 
 
@@ -87,7 +88,7 @@ H_data getHistoForChannelFromTree(char *name_file, short dgtz, short chan, int n
 	histo.spectrum=h_temp;
 
 	
-	if(histo.spectrum){cout <<"Spectrum "<<ReadFile0 <<" tree "<< dgtz <<" channel " << chan <<" acquired"<< endl;}
+	if(histo.spectrum){cout <<"Spectrum acquired -> "<<ReadFile0 <<" tree "<< dgtz <<" channel " << chan << endl;}
 	return histo;
 }
 

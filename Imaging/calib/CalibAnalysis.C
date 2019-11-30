@@ -108,7 +108,7 @@ gStyle->SetOptStat("i");
 	}
 	else{
 		if(na_bin[1]<na_bin[2]){
-			cout<< "Program terminated due to a calibration problem: wrong peaks order\n" <<endl;
+			cout<< "Program terminated due to a calibration problem: wrong peak order\n" <<endl;
 		}	
 	}
 	
@@ -130,11 +130,18 @@ gStyle->SetOptStat("i");
 	float m = fitfun->GetParameter(1);
 	float q = fitfun->GetParameter(0);
 
-	cout  <<" m:  " << m <<" q: " <<q  <<endl;
+	//cout  <<" m:  " << m <<" q: " <<q  <<endl;
 
 // call the function to calibrate the histogram
 	CalibrateHisto(h0,m,q);
-	//h0->Draw();
+	
+
+// Commit changes into the structure:
+	h1_data.spectrum = h0;
+	h1_data.calibfun = fitfun;
+	h1_data.calibgraph = graphErr;
+
+	
 
 	//TH1F* h1=Import(); //questo funziona ma non ti serve usarla 
 	// basta direttamente chiamare gethisto
