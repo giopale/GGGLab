@@ -31,8 +31,7 @@ double invCalib(double y, float m, float q){
 
 
 H_data CalibAnalysis(H_data in_data, int graphs = 0, int low_cut = 400){
-
-
+gErrorIgnoreLevel = kPrint, kInfo, kWarning;
 //Retrieving all H_data structures from files
 
 int dgtz = in_data.dgtz;
@@ -45,9 +44,9 @@ H_data out_data = in_data;
 
 //setting the calibration graph title:
 string tempTitle(filename);
-string Tree = " Tree=" + to_string(dgtz)+ " * ";
+string Tree = " * Tree=" + to_string(dgtz)+ " * ";
 string Bran = " Ch=" + to_string(chan);
-tempTitle = tempTitle + Tree + Bran +" calibration";
+tempTitle = tempTitle + Tree + Bran +" * calibration";
 const char* calibTitle = tempTitle.c_str();
 
 //Message to the people
@@ -111,11 +110,13 @@ TH1F *h0 = (TH1F*)h1_data.spectrum->Clone();
 
 		
 		//gaussian fit for resolution determination
+		TCanvas *c34 = new TCanvas("c34");
 		double p1 = Calib(na_bin[0],m,q);
 		double up = 1.15*p1;
-		double down = 0.88*p1;
+		double down = 0.8*p1;
 		TF1* f1 = new TF1("gaussiana","gaus",down,up);
 		TFitResultPtr fp1 = h1_data.spectrum->Fit(f1,"RQ");
+		if (c34) { c34->Close(); gSystem->ProcessEvents(); }
 		double sigma = f1->GetParameter(2);
 		double resol = 2.355*sigma;
 		h1_data.resolution =resol;
