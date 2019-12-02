@@ -30,7 +30,7 @@ double invCalib(double y, float m, float q){
 }
 
 
-H_data CalibAnalysis(H_data in_data, int graphs = 0, int low_cut = 400){
+H_data CalibAnalysis(H_data in_data, int graphs = 0, int low_cut = 400, int scale = 1){
 
 
 //Retrieving all H_data structures from files
@@ -70,7 +70,7 @@ TH1F *h0 = (TH1F*)h1_data.spectrum->Clone();
 	}
 	else{
 		if(na_bin[1]<na_bin[2]){
-			cout<< "Program terminated due to a calibration problem: wrong peak order\n" <<endl;
+			cout<< "Calibration error: wrong peak order\n" <<endl;
 		}	
 	}
 	
@@ -114,10 +114,12 @@ TH1F *h0 = (TH1F*)h1_data.spectrum->Clone();
 		double p1 = Calib(na_bin[0],m,q);
 		double up = 1.15*p1;
 		double down = 0.88*p1;
+		TCanvas *c126 = new TCanvas("c126");
 		TF1* f1 = new TF1("gaussiana","gaus",down,up);
 		TFitResultPtr fp1 = h1_data.spectrum->Fit(f1,"RQ");
 		double sigma = f1->GetParameter(2);
 		double resol = 2.355*sigma;
+		if (c126) { c126->Close(); gSystem->ProcessEvents();}
 		h1_data.resolution =resol;
 
 

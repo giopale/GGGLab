@@ -10,10 +10,10 @@ struct H_data day1d4 = {(const char*)"spec0_d4.root",0,3};
 
 
 
-day1d1 = CalibAnalysis(day1d1,1);
+day1d1 = CalibAnalysis(day1d1);
 // day1d2 = CalibAnalysis(day1d2);
-// day1d3 = CalibAnalysis(day1d3,0,1500);
-// day1d4 = CalibAnalysis(day1d4,1,1200);
+day1d3 = CalibAnalysis(day1d3,0,1500);
+day1d4 = CalibAnalysis(day1d4,1,1200);
 
 
 
