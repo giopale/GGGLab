@@ -54,6 +54,8 @@ const char* calibTitle = tempTitle.c_str();
 if(h1_data.spectrum){cout << "Beginning calibration..." << endl; }
 
 TH1F *h0 = (TH1F*)h1_data.spectrum->Clone();
+
+
 // search the peaks
 	TSpectrum *s = new TSpectrum(30);
 	int nPeaks;
@@ -63,84 +65,98 @@ TH1F *h0 = (TH1F*)h1_data.spectrum->Clone();
 	//double *na_bin_doubleY = s->GetPositionY();
 	if (c122) { c122->Close(); gSystem->ProcessEvents(); }
 	
+	int err = 0;
 	if(nPeaks!=0){
 		if( nPeaks >2 ){
 			cout << "Calibration error: more than two peaks detected." <<endl;
+			err = 1;
 		}
 	}
 	else{
 		if(na_bin[1]<na_bin[2]){
 			cout<< "Calibration error: wrong peak order\n" <<endl;
+			err = 2;
 		}	
 	}
 	
 
-	// fit the peaks with the Na energies
-	double na_kev[2]; 
-	na_kev[0] = 511.; 
-	na_kev[1] = 1275.;
-	TGraphErrors *graphErr = new TGraphErrors(nPeaks,na_bin,na_kev);
-	TF1 *fitfun = new TF1("calfitfun1","pol1",na_bin[0],na_bin[1]);
-	TFitResultPtr r = graphErr->Fit(fitfun,"Q");
-	Int_t status = r;
-	if(r!=0){
-		cout<<"Calibration status: FAILED"<< endl;
-		cout<<"Calibration terminated" <<endl;
-		}
-	if(r==0){	
-		graphErr->SetMarkerStyle(47);
-		graphErr->SetTitle(calibTitle);
+	if(err==0){
+		// fit the peaks with the Na energies
+		double na_kev[2]; 
+		na_kev[0] = 511.; 
+		na_kev[1] = 1275.;
+		TGraphErrors *graphErr = new TGraphErrors(nPeaks,na_bin,na_kev);
+		TF1 *fitfun = new TF1("calfitfun1","pol1",na_bin[0],na_bin[1]);
+		TFitResultPtr r = graphErr->Fit(fitfun,"Q");
+		Int_t status = r;
+		if(r!=0){
+			cout<<"Calibration status: FAILED"<< endl;
+			cout<<"Calibration terminated" <<endl;
+			}
+		if(r==0){	
+			graphErr->SetMarkerStyle(47);
+			graphErr->SetTitle(calibTitle);
+
+			//Histogram time scaling
+			if(scale ==1 ){
+				int basetime = 1800;
+				h0->Scale(basetime/h1_data.acqtime);
+				string oldname = h0->GetTitle();
+				oldname = oldname + " norm. to " + to_string(basetime) + "s";
+				const char* newname = oldname.c_str();
+				h0->SetTitle(newname);
+			}	
+			// get the fit parameters
+			float m = fitfun->GetParameter(1);
+			float q = fitfun->GetParameter(0);
+			cout<<"Calibration status: CONVERGED; " <<"Exit parameters: "<<" m:  " << m <<" q: " <<q  <<endl;
+			if(m>0){	
+			// call the function to calibrate the histogram
+				
+				CalibrateHisto(h0,m,q);
+			
+			// second call to Search to plot the peaks over the calibrated histogram
+			TSpectrum *t = new TSpectrum(30);
+			TCanvas *c125 = new TCanvas("c125");
+			nPeaks = t->Search(h0,20,"nobackground",0.05);
+			if (c125) { c125->Close(); gSystem->ProcessEvents(); }
+			// Commit changes into the structure:
+			h1_data.spectrum = h0;
+			h1_data.calibfun = fitfun;
+			h1_data.calibgraph = graphErr;
+
+			
+			//gaussian fit for resolution determination
+			double p1 = Calib(na_bin[0],m,q);
+			double up = 1.15*p1;
+			double down = 0.88*p1;
+			TCanvas *c126 = new TCanvas("c126");
+			TF1* f1 = new TF1("gaussiana","gaus",down,up);
+			TFitResultPtr fp1 = h1_data.spectrum->Fit(f1,"RQ");
+			double sigma = f1->GetParameter(2);
+			double resol = 2.355*sigma;
+			if (c126) { c126->Close(); gSystem->ProcessEvents();}
+			h1_data.resolution =resol;
 
 
-		// get the fit parameters
-		float m = fitfun->GetParameter(1);
-		float q = fitfun->GetParameter(0);
-		cout<<"Calibration status: CONVERGED; " <<"Exit parameters: "<<" m:  " << m <<" q: " <<q  <<endl;
-		if(m>0){	
-		// call the function to calibrate the histogram
-			CalibrateHisto(h0,m,q);
-		// second call to Search to plot the peaks over the calibrated histogram
-		TSpectrum *t = new TSpectrum(30);
-		TCanvas *c125 = new TCanvas("c125");
-		nPeaks = t->Search(h0,20,"nobackground",0.05);
-		if (c125) { c125->Close(); gSystem->ProcessEvents(); }
-		// Commit changes into the structure:
-		h1_data.spectrum = h0;
-		h1_data.calibfun = fitfun;
-		h1_data.calibgraph = graphErr;
+			out_data = h1_data;
+			}
 
+			else{cout<<"m is negative - calibration aborted"<<endl;}
 		
-		//gaussian fit for resolution determination
-		double p1 = Calib(na_bin[0],m,q);
-		double up = 1.15*p1;
-		double down = 0.88*p1;
-		TCanvas *c126 = new TCanvas("c126");
-		TF1* f1 = new TF1("gaussiana","gaus",down,up);
-		TFitResultPtr fp1 = h1_data.spectrum->Fit(f1,"RQ");
-		double sigma = f1->GetParameter(2);
-		double resol = 2.355*sigma;
-		if (c126) { c126->Close(); gSystem->ProcessEvents();}
-		h1_data.resolution =resol;
-
-
-		out_data = h1_data;
-		}
-
-		else{cout<<"m is negative - calibration aborted"<<endl;}
-	
-	// Draw the resulting histogram and calibration function
-		if(graphs!=0){
-			TCanvas *c123 = new TCanvas("c123");
-			gStyle->SetOptStat("i");
-			h0->Draw();
-			TCanvas *c124 = new TCanvas("c124");
-			graphErr->Draw();
-		}
-
-	
-	cout<<"End of calibration" <<endl;
+		// Draw the resulting histogram and calibration function
+			if(graphs!=0){
+				TCanvas *c123 = new TCanvas("c123");
+				gStyle->SetOptStat("i");
+				h0->Draw();
+				TCanvas *c124 = new TCanvas("c124");
+				graphErr->Draw();
+			}
+		}	
 
 	}	
+
+	cout<<"End of calibration" <<endl;
 
 return out_data;
 }
