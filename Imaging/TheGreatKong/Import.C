@@ -45,6 +45,8 @@ struct H_data
 	ULong64_t acqtime;
 	ULong64_t resolution;
 	TF1* calibfun;
+	double m;
+	double q;
 	TGraphErrors* calibgraph;
 	TH1F* spectrum; 
 };
