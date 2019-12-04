@@ -51,6 +51,7 @@ struct H_data
 
 
 H_data getHistoForChannelFromTree(const char *name_file, short dgtz, short chan, int numBins, double minX, double maxX) {
+	
 	// variables
 	slimport_data_t indata;
 	H_data histo;
@@ -81,6 +82,11 @@ H_data getHistoForChannelFromTree(const char *name_file, short dgtz, short chan,
 	}
 
 	// return
+	gStyle->SetTitleFontSize(.08);
+	h_temp->GetXaxis()->SetTitleSize(.055);
+	h_temp->GetYaxis()->SetTitleSize(.055);
+	h_temp->GetXaxis()->SetLabelSize(.045);
+	h_temp->GetYaxis()->SetLabelSize(.045);
 	histo.acqtime = time * 4e-9;
 	string timestr = to_string(histo.acqtime);
 	titleString = titleString + " * " + " Time = " +timestr + "s";
