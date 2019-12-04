@@ -124,6 +124,8 @@ if(r==0){
 	h1_data.spectrum = h0;
 	h1_data.calibfun = fitfun;
 	h1_data.calibgraph = graphErr;
+	h1_data.m = m;
+	h1_data.q = q;
 
 	
 	//gaussian fit for resolution determination
@@ -255,6 +257,8 @@ if(na_bin[1]<0){
 	h1_data.spectrum = h0;
 	h1_data.calibfun = fitfun1;
 	h1_data.calibgraph = graphErr1;
+	h1_data.m = m;
+	h1_data.q = q;
 
 	// Draw the resulting histogram and calibration function
 		if(graphs!=0){
@@ -295,6 +299,8 @@ else{
 		h1_data.spectrum = h0;
 		h1_data.calibfun = fitfun;
 		h1_data.calibgraph = graphErr;
+		h1_data.m = m;
+		h1_data.q = q;
 		}
 
 		else{cout<<"m is negative - calibration aborted"<<endl;}

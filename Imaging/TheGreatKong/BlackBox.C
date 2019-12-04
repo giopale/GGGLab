@@ -1,5 +1,10 @@
 #include "CalibAnalysis.C"
 
+struct calib_data
+{
+	double m;
+	double q;
+};
 
 ///////////////////////// H_data structure reminder:
 // struct H_data
@@ -33,7 +38,7 @@ day1[7] = {"spec0_d8.root",1,3};
 //////////////// Calibration analysis
 //H_data CalibAnalysis(H_data in_data, int graphs = 0, int low_cut = 400, int scale = 1, int basetime = 1800, float peak1 = -1, float peak2 = -1){
 
-//day1[0] = CalibAnalysis(day1[0],0,400,0); //ok
+day1[0] = CalibAnalysis(day1[0],0,400,0); //ok
 
 day1[1] = CalibAnalysis(day1[1],0,0,0);	//ok
 day1[2] = CalibAnalysis(day1[2],0,1500,0);	//ok
@@ -44,6 +49,8 @@ day1[6] = CalibAnalysisMod(day1[6],0,5000,0,1800,6775,16833);	//na_bin = [6775,1
 day1[7] = CalibAnalysisMod(day1[7],0,5000,0,1800,6711);	//na_bin = [6711]; il picco a 1275 non esiste
 
 //day1[4].spectrum->Draw();
+cout <<"day1 det 1 m: "<<day1[0].m <<" q: " <<day1[0].q <<endl;
+
 
 
 
