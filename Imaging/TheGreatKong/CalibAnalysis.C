@@ -341,6 +341,44 @@ out_data = h1_data;
 return out_data;
 }
 
+////////////////////////   MANUAL PEAKS FITTING METHOD //////////////////////////////
+H_data JustFill(H_data in_data, int graphs = 0, int low_cut = 0, int scale = 1, int basetime = 1800){
+gStyle->SetTitleFontSize(.08);
+
+//Retrieving all H_data structures from files
+
+int dgtz = in_data.dgtz;
+int chan =in_data.ch;
+const char* filename = in_data.filename;
+
+
+H_data h1_data = getHistoForChannelFromTree(filename,dgtz,chan,1000,low_cut,26000);		//DETECTOR ;
+H_data out_data = in_data;
+
+//setting the calibration graph title:
+string tempTitle(filename);
+string Tree = " Tree=" + to_string(dgtz)+ " * ";
+string Bran = " Ch=" + to_string(chan);
+tempTitle = tempTitle + Tree + Bran +" calibration";
+const char* calibTitle = tempTitle.c_str();
+
+//Message to the people
+//if(h1_data.spectrum){cout << "Beginning calibration..." << endl; }
+
+TH1F *h0 = (TH1F*)h1_data.spectrum->Clone();
+//Scaling spectrum
+if(scale == 1){
+	h0->Scale(basetime/h1_data.acqtime);
+	string newtitle = h0->GetTitle();
+	newtitle = newtitle + " norm. to " + to_string(basetime) + "s";
+	h0->SetTitle(newtitle.c_str());
+}
+
+h1_data.spectrum = h0;
+
+out_data = h1_data;
+return out_data;
+}
 
 
 
