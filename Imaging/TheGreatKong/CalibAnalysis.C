@@ -10,9 +10,8 @@ void CalibrateHisto(TH1F *h_uncal, float m, float q) {
   	//cout <<"minX =  " <<((asse1->GetXmin())) <<" maxX = " <<(asse1->GetXmax())<<endl; //just to verify the truthness of the calibration
   	//cout <<"min =  " <<min <<" max = " <<max <<endl;
   	asse1->SetLimits(min,max);
-	if (m!=1 && q!=0) //This means that I actually changed the calibration!
-	    h_uncal->SetXTitle("Energy [keV]");
-		h_uncal->SetYTitle("Counts");
+	h_uncal->SetXTitle("Energy [keV]");
+	h_uncal->SetYTitle("Counts");
 };
 
 //funzione di calibrazione CHANNELS -> KEV
