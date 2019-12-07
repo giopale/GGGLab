@@ -110,7 +110,7 @@ int bin1 = tango.spectrum->FindBin(2000);
 int bin2 = tango.spectrum->FindBin(3500);
 int egral = bb[5][7].spectrum->Integral(bin1,bin2);
 cout << "Interessant integral: " <<egral <<" bins: "<< bin1 <<" " <<bin2 <<endl;
-bb[5][7].spectrum->Draw("same");
+//bb[5][7].spectrum->Draw("same");
 
 
 
@@ -137,6 +137,7 @@ bb[index][j].spectrum->Draw();
 ////////////////// Peak integral calculation
 
 double I[6][8];
+double sigI[6][8]; //calcolo direttamente sigma(log(I/I0))
 double I0[8];
 int alpha, bravo; //integration limits in BINS
 int low, up;	//integration limits in KEV
@@ -156,9 +157,9 @@ for(int i=0; i<6; i++){
 			bravo = day1[j].spectrum->GetXaxis()->FindBin(up);
 			I[i][j] = bb[i][j].spectrum->Integral(alpha,bravo);
 		}
-		cout <<"Integral pos " <<i+1 <<" det " << j+1 <<": " <<I[i][j] <<" low " << (int)alpha <<" up " << (int)bravo <<endl;
+		//cout <<"Integral pos " <<i+1 <<" det " << j+1 <<": " <<I[i][j] <<" low " << (int)alpha <<" up " << (int)bravo <<endl;
 	}
-	cout << endl;
+	//cout << endl;
 }
 
 //int ManualIntegral[8] = {24190,160,414,4744,4430,4579,3314,741};
@@ -174,14 +175,70 @@ for(int i=0; i<6; i++){
 				double trial = I[i][j];
 				I[5][4] = 2400;
 				I[5][6] = 3600;
-				I[5][2] = 900;
+				I[5][2] = 960;
 				I[5][7] = 1255;
 				I[5][5] = 5234;
+				sigI[i][j] = TMath::Sqrt(1/I[i][j] + 1/I[5][j]);
  				I[i][j] = I[i][j]/I[5][j];
-		cout <<"Intensity pos " <<i+1 <<" det " << j+1 <<": " <<I[i][j] << "  -- dividing " << trial <<" by " <<I[5][j] <<endl;
+		//cout <<"Intensity pos " <<i+1 <<" det " << j+1 <<": " <<I[i][j] << "  -- dividing " << trial <<" by " <<I[5][j] <<endl;
 	}
-	cout << endl;
+	//cout << endl;
 }
+
+
+/////// Attenuation coefficient calculation
+double ignoto1[7];
+double ignoto2[3];
+
+for(int i=1; i<7; i++){		//striscia verticale
+	ignoto1[i] = I[2][i];
+	ignoto1[i] = TMath::Log(ignoto1[i]);
+}
+for(int i=0; i<3; i++){		//striscia orizzontale
+	ignoto2[i] = I[i][7];
+	ignoto2[i] = TMath::Log(ignoto2[i]);
+}
+
+double beta[8] = {0.,0.261,0.197,0.133,0.067,0.067,0.133,0.197};
+double x1Fe[8], sigx1Fe;
+double x1Pb[8], sigx1Pb;
+double x2Fe[3];
+double x2Pb[3];
+double muFe = 0.656;
+double muPb = 1.7835;
+double mean1Fe, mean1Pb, mean2Fe, mean2Pb;
+double mean1Fe_sig, mean1Pb_sig, mean2Fe_sig, mean2Pb_sig;
+for(int i=1; i<7; i++){
+	x1Fe[i] = -1* TMath::Cos(beta[i])*ignoto1[i]/muFe;
+	x1Pb[i] = -1* TMath::Cos(beta[i])*ignoto1[i]/muPb;
+	mean1Fe += x1Fe[i];
+	mean1Pb += x1Pb[i];
+
+	cout<< "x1Fe: " <<x1Fe[i] <<" x1Pb: " <<x1Pb[i] <<endl;
+}
+mean1Fe = mean1Fe/6;
+mean1Pb = mean1Pb/6;
+
+
+cout << endl;
+
+for(int i=0; i<3; i++){
+	x2Fe[i] = -1* TMath::Cos(beta[7])*ignoto2[i]/muFe;
+	x2Pb[i] = -1* TMath::Cos(beta[7])*ignoto2[i]/muPb; 
+	mean2Fe += x2Fe[i];
+	mean2Pb += x2Pb[i];
+
+	cout<< "x2Fe: " <<x2Fe[i] <<" x2Pb: " <<x2Pb[i] <<endl;
+}
+mean2Fe = mean2Fe/3;
+mean2Pb = mean2Pb/3;
+
+cout << endl <<"Spessori stimati per il materiale nella striscia verticale: " <<endl;
+cout << "Fe: " <<mean1Fe <<" Pb: " << mean1Pb  <<endl;
+
+cout << endl <<"Spessori stimati per il materiale nella striscia orizzontale: " <<endl;
+cout << "Fe: " <<mean2Fe <<" Pb: " << mean2Pb  <<endl;
+
 
 
 
@@ -196,7 +253,9 @@ for(int i=0; i<8; i++){
 	//cout <<"Integral0: " <<I0[i] <<endl;
 }
 
-cout << "det8 m: " <<day1[7].m <<" q: " <<day1[7].q <<endl;
+//cout << "det8 m: " <<day1[7].m <<" q: " <<day1[7].q <<endl;
+
+
 
 
 
@@ -207,14 +266,12 @@ TH2F* IntMap = new TH2F("IntMap","Intensity [a.u.]", 5, 0, 5, 7, 1, 8);
 for(int i=0; i<5; i++){
 	for(int j=1; j< 8; j++){
 	IntMap->SetBinContent(i+1,j,I[i][j]);
-	if(j==4){cout << "Integral: "<< I[i][j]<<endl;}
+	//if(j==4){cout << "Integral: "<< I[i][j]<<endl;}
 	}
 }
 
 TCanvas *c123 = new TCanvas("c123");
 IntMap->Draw("colz");
-
-
 
 
 
