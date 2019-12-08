@@ -1,0 +1,4 @@
+// This file contains x*mu; sig_x*mu for the horizontal stripe
+0.349218	0.0439826
+0.57392	0.0455972
+0.423353	0.0441166

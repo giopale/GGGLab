@@ -187,51 +187,68 @@ for(int i=0; i<6; i++){
 
 
 /////// Attenuation coefficient calculation
-double ignoto1[7];
-double ignoto2[3];
+double ignoto1[7], ignoto1_sig[7];
+double ignoto2[3], ignoto2_sig[7];
 
 for(int i=1; i<7; i++){		//striscia verticale
 	ignoto1[i] = I[2][i];
+	ignoto1_sig[i] = sigI[2][i];
 	ignoto1[i] = TMath::Log(ignoto1[i]);
 }
 for(int i=0; i<3; i++){		//striscia orizzontale
-	ignoto2[i] = I[i][7];
+	ignoto2[i] = I[i+1][7];
+	ignoto2_sig[i] = sigI[i+1][7];
 	ignoto2[i] = TMath::Log(ignoto2[i]);
 }
 
 double beta[8] = {0.,0.261,0.197,0.133,0.067,0.067,0.133,0.197};
-double x1Fe[8], sigx1Fe;
-double x1Pb[8], sigx1Pb;
+double x1Fe[8], sigx1Fe[8];
+double x1Pb[8], sigx1Pb[8];
 double x2Fe[3];
 double x2Pb[3];
 double muFe = 0.656;
 double muPb = 1.7835;
 double mean1Fe, mean1Pb, mean2Fe, mean2Pb;
-double mean1Fe_sig, mean1Pb_sig, mean2Fe_sig, mean2Pb_sig;
+
+ofstream myfile;
+  myfile.open ("00vertical.txt");
+  myfile <<"// This file contains x*mu; sig_x*mu for the vertical stripe" <<endl;
 for(int i=1; i<7; i++){
 	x1Fe[i] = -1* TMath::Cos(beta[i])*ignoto1[i]/muFe;
 	x1Pb[i] = -1* TMath::Cos(beta[i])*ignoto1[i]/muPb;
 	mean1Fe += x1Fe[i];
 	mean1Pb += x1Pb[i];
+	//cout<< "x1Fe: " <<x1Fe[i] <<" x1Pb: " <<x1Pb[i] <<endl;
 
-	cout<< "x1Fe: " <<x1Fe[i] <<" x1Pb: " <<x1Pb[i] <<endl;
+	x1Fe[i] = x1Fe[i]*muFe;
+	ignoto1_sig[i] = ignoto1_sig[i]*TMath::Cos(beta[i]);
+	myfile <<x1Fe[i] <<"	" << ignoto1_sig[i]<<endl;
 }
 mean1Fe = mean1Fe/6;
 mean1Pb = mean1Pb/6;
-
+myfile.close(); 
 
 cout << endl;
 
+ofstream myfile1;
+myfile1.open ("00horizontal.txt");
+myfile1 <<"// This file contains x*mu; sig_x*mu for the horizontal stripe" <<endl;
+
 for(int i=0; i<3; i++){
 	x2Fe[i] = -1* TMath::Cos(beta[7])*ignoto2[i]/muFe;
-	x2Pb[i] = -1* TMath::Cos(beta[7])*ignoto2[i]/muPb; 
+	x2Pb[i] = -1* TMath::Cos(beta[7])*ignoto2[i]/muPb;
 	mean2Fe += x2Fe[i];
 	mean2Pb += x2Pb[i];
-
 	cout<< "x2Fe: " <<x2Fe[i] <<" x2Pb: " <<x2Pb[i] <<endl;
+
+	x2Fe[i] = x2Fe[i]*muFe;
+	ignoto2_sig[i] = ignoto2_sig[i]*TMath::Cos(beta[i]);
+	myfile1 << x2Fe[i] <<"	"<<ignoto2_sig[i] <<endl;
 }
+myfile1.close();
 mean2Fe = mean2Fe/3;
 mean2Pb = mean2Pb/3;
+
 
 cout << endl <<"Spessori stimati per il materiale nella striscia verticale: " <<endl;
 cout << "Fe: " <<mean1Fe <<" Pb: " << mean1Pb  <<endl;
