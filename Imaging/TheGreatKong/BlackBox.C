@@ -57,6 +57,23 @@ day1[7] = CalibAnalysisMod(day1[7],0,5000,0,1800,6711);	//na_bin = [6711]; il pi
 //day1[4].spectrum->Draw();
 cout.clear();
 
+//////////////// Calibration parameters output:
+ofstream parameters_file;
+parameters_file.open("calib_parameters.txt");
+parameters_file<< "//This file contains the calibration parameters for detector 1 to 8" <<endl;
+parameters_file<< "//m 	m_sigma		q 		q_sigma" <<endl;
+double mike, quebec, mike_sigma, quebec_sigma;
+
+for(int i =0; i <8 ; i++){
+	mike = day1[i].calibfun->GetParameter(1);
+	mike_sigma = day1[i].calibfun->GetParError(1);
+	quebec = day1[i].calibfun->GetParameter(0);
+	quebec_sigma = day1[i].calibfun->GetParError(0);
+	parameters_file <<"Detector "<<i+1 <<" : " <<mike <<"	"<<mike_sigma <<"	" <<quebec <<"	" <<quebec_sigma <<endl;
+}
+
+parameters_file.close();
+
 ///////////////// Matrix initialization and calibration
 
 H_data bb[6][8];
@@ -201,7 +218,7 @@ for(int i=0; i<3; i++){		//striscia orizzontale
 	ignoto2[i] = TMath::Log(ignoto2[i]);
 }
 
-double beta[8] = {0.,0.261,0.197,0.133,0.067,0.067,0.133,0.197};
+double beta[8] ={0.,0.197,0.133,0.067,0.,0.067,0.133,0.197};
 double x1Fe[8], sigx1Fe[8];
 double x1Pb[8], sigx1Pb[8];
 double x2Fe[3];

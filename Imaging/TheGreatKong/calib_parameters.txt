@@ -1,0 +1,10 @@
+//This file contains the calibration parameters for detector 1 to 8
+//m 	m_sigma		q 		q_sigma
+Detector 1 : 0.102556	0.000189838	45.9708	1.71998
+Detector 2 : 0.262363	0.00048565	50.5536	1.71225
+Detector 3 : 0.21506	0.00039809	11.8999	1.77766
+Detector 4 : 0.272857	0.000505076	64.1964	1.68928
+Detector 5 : 0.0504457	9.33782e-05	49.1697	1.71458
+Detector 6 : 0.23875	0.000441942	18.5781	1.76632
+Detector 7 : 0.0759594	0.000140606	-3.62517	1.80406
+Detector 8 : 0.0761436	0	0	0
