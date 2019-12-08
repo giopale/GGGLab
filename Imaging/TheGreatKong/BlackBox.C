@@ -48,7 +48,7 @@ day1[0] = CalibAnalysis(day1[0],0,400,0); //ok
 day1[1] = CalibAnalysis(day1[1],0,0,0);	//ok
 day1[2] = CalibAnalysis(day1[2],0,1500,0);	//ok
 day1[3] = CalibAnalysis(day1[3],0,1000,0);	//ok
-day1[4] = CalibAnalysisMod(day1[4],0,7000,0,1800,9155,24300);	//na_bin = [9155,24300]non va bene -> tirare fuori picchi a mano (ne piglia troppi)
+day1[4] = CalibAnalysisMod(day1[4],1,7000,0,1800,9155,24300);	//na_bin = [9155,24300]non va bene -> tirare fuori picchi a mano (ne piglia troppi)
 day1[5] = CalibAnalysis(day1[5],0,1000,0);	//ok
 day1[6] = CalibAnalysisMod(day1[6],0,5000,0,1800,6775,16833);	//na_bin = [6775,16833]Usare due dei picchi rilevati
 H_data tango = JustFill(day1[7],0,1000,0);
@@ -295,16 +295,25 @@ for(int i=0; i<8; i++){
 
 /////////////// 2D histogram 
 
-TH2F* IntMap = new TH2F("IntMap","Intensity [a.u.]", 5, 0, 5, 7, 1, 8);
+TH2F* IntMap = new TH2F("IntMap","", 5, 0, 5, 7, 1, 8);
 
 for(int i=0; i<5; i++){
 	for(int j=1; j< 8; j++){
 	IntMap->SetBinContent(i+1,j,I[i][j]);
+	string tempx = to_string(i+1);
+	string tempy = to_string(j+1);
+	const char* numx = tempx.c_str();
+	const char* numy = tempy.c_str();
+	IntMap->GetXaxis()->SetBinLabel(i+1,numx);
+	IntMap->GetYaxis()->SetBinLabel(j,numy);
 	//if(j==4){cout << "Integral: "<< I[i][j]<<endl;}
 	}
 }
 
-TCanvas *c123 = new TCanvas("c123");
+IntMap->GetXaxis()->SetTitle("Position");
+IntMap->GetYaxis()->SetTitle("Detector");
+gStyle->SetOptStat(0);
+TCanvas *c456 = new TCanvas("c456");
 IntMap->Draw("colz");
 
 
