@@ -10,9 +10,8 @@ void CalibrateHisto(TH1F *h_uncal, float m, float q) {
   	//cout <<"minX =  " <<((asse1->GetXmin())) <<" maxX = " <<(asse1->GetXmax())<<endl; //just to verify the truthness of the calibration
   	//cout <<"min =  " <<min <<" max = " <<max <<endl;
   	asse1->SetLimits(min,max);
-	if (m!=1 && q!=0) //This means that I actually changed the calibration!
-	    h_uncal->SetXTitle("Energy [keV]");
-		h_uncal->SetYTitle("Counts");
+	h_uncal->SetXTitle("Energy [keV]");
+	h_uncal->SetYTitle("Counts");
 };
 
 //funzione di calibrazione CHANNELS -> KEV
@@ -45,7 +44,7 @@ H_data out_data = in_data;
 
 //setting the calibration graph title:
 string tempTitle(filename);
-string Tree = " Tree=" + to_string(dgtz)+ " * ";
+string Tree = " * Tree=" + to_string(dgtz)+ " * ";
 string Bran = " Ch=" + to_string(chan);
 tempTitle = tempTitle + Tree + Bran +" calibration";
 const char* calibTitle = tempTitle.c_str();
@@ -152,6 +151,15 @@ if(r==0){
 		gStyle->SetOptStat("i");
 		h0->Draw();
 		TCanvas *c124 = new TCanvas("c124");
+		graphErr->SetMarkerSize(1.5);
+		graphErr->GetXaxis()->SetTitle("Channel");
+		graphErr->GetYaxis()->SetTitle("Energy [keV]");
+		graphErr->GetXaxis()->SetTitleSize(.055);
+		graphErr->GetYaxis()->SetTitleSize(.055);
+		graphErr->GetXaxis()->SetLabelSize(.045);
+		graphErr->GetYaxis()->SetLabelSize(.045);
+		graphErr->GetYaxis()->SetTitleOffset(.9);
+		graphErr->GetXaxis()->SetTitleOffset(.9);
 		graphErr->Draw();
 	}
 
@@ -181,7 +189,7 @@ H_data out_data = in_data;
 
 //setting the calibration graph title:
 string tempTitle(filename);
-string Tree = " Tree=" + to_string(dgtz)+ " * ";
+string Tree = " * Tree=" + to_string(dgtz)+ " * ";
 string Bran = " Ch=" + to_string(chan);
 tempTitle = tempTitle + Tree + Bran +" calibration";
 const char* calibTitle = tempTitle.c_str();
@@ -268,6 +276,15 @@ if(na_bin[1]<0){
 			graphErr1->SetMarkerStyle(47);
 			graphErr1->SetMarkerSize(20);
 			graphErr1->SetTitle(calibTitle);
+			graphErr1->SetMarkerSize(1.5);
+			graphErr1->GetXaxis()->SetTitle("Channel");
+			graphErr1->GetYaxis()->SetTitle("Energy [keV]");
+			graphErr1->GetXaxis()->SetTitleSize(.055);
+			graphErr1->GetYaxis()->SetTitleSize(.055);
+			graphErr1->GetXaxis()->SetLabelSize(.045);
+			graphErr1->GetYaxis()->SetLabelSize(.045);
+			graphErr1->GetYaxis()->SetTitleOffset(.9);
+			graphErr1->GetXaxis()->SetTitleOffset(.9);
 			TCanvas *c124 = new TCanvas("c124");
 			graphErr1->Draw();
 		}
@@ -290,10 +307,10 @@ else{
 		// call the function to calibrate the histogram
 		if(err ==0) {CalibrateHisto(h0,m,q);}
 		// second call to Search to plot the peaks over the calibrated histogram
-		TSpectrum *t = new TSpectrum(30);
-		TCanvas *c125 = new TCanvas("c125");
-		nPeaks = t->Search(h0,20,"nobackground",0.05);
-		if (c125) { c125->Close(); gSystem->ProcessEvents(); }
+		// TSpectrum *t = new TSpectrum(30);
+		// TCanvas *c125 = new TCanvas("c125");
+		// nPeaks = t->Search(h0,20,"nobackground",0.05);
+		// if (c125) { c125->Close(); gSystem->ProcessEvents(); }
 		
 		// Commit changes into the structure:
 		h1_data.spectrum = h0;
@@ -311,6 +328,15 @@ else{
 			gStyle->SetOptStat("i");
 			h0->Draw();
 			TCanvas *c124 = new TCanvas("c124");
+			graphErr->SetMarkerSize(1.5);
+			graphErr->GetXaxis()->SetTitle("Channel");
+			graphErr->GetYaxis()->SetTitle("Energy [keV]");
+			graphErr->GetXaxis()->SetTitleSize(.055);
+			graphErr->GetYaxis()->SetTitleSize(.055);
+			graphErr->GetXaxis()->SetLabelSize(.045);
+			graphErr->GetYaxis()->SetLabelSize(.045);
+			graphErr->GetYaxis()->SetTitleOffset(.9);
+			graphErr->GetXaxis()->SetTitleOffset(.9);
 			graphErr->Draw();
 		}
 
@@ -341,6 +367,44 @@ out_data = h1_data;
 return out_data;
 }
 
+////////////////////////   MANUAL PEAKS FITTING METHOD //////////////////////////////
+H_data JustFill(H_data in_data, int graphs = 0, int low_cut = 0, int scale = 1, int basetime = 1800){
+gStyle->SetTitleFontSize(.08);
+
+//Retrieving all H_data structures from files
+
+int dgtz = in_data.dgtz;
+int chan =in_data.ch;
+const char* filename = in_data.filename;
+
+
+H_data h1_data = getHistoForChannelFromTree(filename,dgtz,chan,1000,low_cut,26000);		//DETECTOR ;
+H_data out_data = in_data;
+
+//setting the calibration graph title:
+string tempTitle(filename);
+string Tree = " Tree=" + to_string(dgtz)+ " * ";
+string Bran = " Ch=" + to_string(chan);
+tempTitle = tempTitle + Tree + Bran +" calibration";
+const char* calibTitle = tempTitle.c_str();
+
+//Message to the people
+//if(h1_data.spectrum){cout << "Beginning calibration..." << endl; }
+
+TH1F *h0 = (TH1F*)h1_data.spectrum->Clone();
+//Scaling spectrum
+if(scale == 1){
+	h0->Scale(basetime/h1_data.acqtime);
+	string newtitle = h0->GetTitle();
+	newtitle = newtitle + " norm. to " + to_string(basetime) + "s";
+	h0->SetTitle(newtitle.c_str());
+}
+
+h1_data.spectrum = h0;
+
+out_data = h1_data;
+return out_data;
+}
 
 
 

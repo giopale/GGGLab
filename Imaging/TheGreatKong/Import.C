@@ -47,6 +47,7 @@ struct H_data
 	TF1* calibfun;
 	double m;
 	double q;
+	int xImportRange;
 	TGraphErrors* calibgraph;
 	TH1F* spectrum; 
 };
@@ -93,6 +94,9 @@ H_data getHistoForChannelFromTree(const char *name_file, short dgtz, short chan,
 	string timestr = to_string(histo.acqtime);
 	titleString = titleString + " * " + " Time = " +timestr + "s";
 	h_temp->SetTitle(titleString.c_str());
+	h_temp->GetYaxis()->SetTitleOffset(.9);
+	h_temp->GetXaxis()->SetTitleOffset(.9);
+	histo.xImportRange = (int)maxX-minX;
 	histo.spectrum=h_temp;
 
 	
