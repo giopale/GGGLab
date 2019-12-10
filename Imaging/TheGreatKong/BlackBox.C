@@ -22,6 +22,25 @@ struct calib_data
 // 	TH1F* spectrum; 
 // };
 
+double *WMean(double *val, double *sig, int arraySize){
+	static double mean[2];
+	double kappa;
+	cout << sig[0] <<endl;
+	for(int i=0; i<arraySize ; i++){
+		kappa += TMath::Power(1./sig[i],2);
+		cout<< "kappa = "<< TMath::Power(1./sig[i],2) <<endl;
+	}
+	mean[0] = 0;
+	for(int i =0; i<arraySize ; i++){
+		mean[0] += val[i]/sig[i]/sig[i];
+		cout <<"Mean = " <<mean <<endl;
+	}
+	mean[0] = mean[0]/kappa;
+	mean[1] = TMath::Sqrt(1/kappa);
+	 cout << "mean[0] = " << mean[0] << "mean [1] = " <<mean[1] <<endl;
+	double *pointer = mean;
+	return pointer;
+}
 
 void BlackBox(){
 
@@ -50,7 +69,7 @@ day1[2] = CalibAnalysis(day1[2],0,1500,0);	//ok
 day1[3] = CalibAnalysis(day1[3],0,1000,0);	//ok
 day1[4] = CalibAnalysisMod(day1[4],1,7000,0,1800,9155,24300);	//na_bin = [9155,24300]non va bene -> tirare fuori picchi a mano (ne piglia troppi)
 day1[5] = CalibAnalysis(day1[5],0,1000,0);	//ok
-day1[6] = CalibAnalysisMod(day1[6],0,5000,0,1800,6775,16833);	//na_bin = [6775,16833]Usare due dei picchi rilevati
+day1[6] = CalibAnalysisMod(day1[6],0,5000,0,1800,6775,16833);	//na_bin = [6775,16833] Usare due dei picchi rilevati
 H_data tango = JustFill(day1[7],0,1000,0);
 day1[7] = CalibAnalysisMod(day1[7],0,5000,0,1800,6711);	//na_bin = [6711]; il picco a 1275 non esiste
 
@@ -126,7 +145,7 @@ cout.clear();
 int bin1 = tango.spectrum->FindBin(2000);
 int bin2 = tango.spectrum->FindBin(3500);
 int egral = bb[5][7].spectrum->Integral(bin1,bin2);
-cout << "Interessant integral: " <<egral <<" bins: "<< bin1 <<" " <<bin2 <<endl;
+//cout << "Interessant integral: " <<egral <<" bins: "<< bin1 <<" " <<bin2 <<endl;
 //bb[5][7].spectrum->Draw("same");
 
 
@@ -153,7 +172,7 @@ bb[index][j].spectrum->Draw();
 
 ////////////////// Peak integral calculation
 
-double I[6][8];
+double I[6][8], Iaux[6][8];
 double sigI[6][8]; //calcolo direttamente sigma(log(I/I0))
 double I0[8];
 int alpha, bravo; //integration limits in BINS
@@ -175,6 +194,7 @@ for(int i=0; i<6; i++){
 			I[i][j] = bb[i][j].spectrum->Integral(alpha,bravo);
 		}
 		//cout <<"Integral pos " <<i+1 <<" det " << j+1 <<": " <<I[i][j] <<" low " << (int)alpha <<" up " << (int)bravo <<endl;
+		Iaux[i][j] = I[i][j];
 	}
 	//cout << endl;
 }
@@ -184,20 +204,20 @@ for(int j=0; j<8; j++){
 	//I[5][j] = ManualIntegral[j];
 }
 
+I[5][2] = 960;
+
+I[5][4] = 2402;
+I[5][5] = 5234;
+I[5][6] = 3621;
+I[5][7] = 1255;
 
 // Intensity calculation;
 for(int i=0; i<6; i++){
 	for(int j=0; j<8; j++){
 	//cout <<"Indexes "<<i << " " <<j<<": opening "<<bb[i][j].spectrum->GetTitle()<<endl;
-				double trial = I[i][j];
-				I[5][4] = 2400;
-				I[5][6] = 3600;
-				I[5][2] = 960;
-				I[5][7] = 1255;
-				I[5][5] = 5234;
-				sigI[i][j] = TMath::Sqrt(1/I[i][j] + 1/I[5][j]);
  				I[i][j] = I[i][j]/I[5][j];
-		//cout <<"Intensity pos " <<i+1 <<" det " << j+1 <<": " <<I[i][j] << "  -- dividing " << trial <<" by " <<I[5][j] <<endl;
+ 				sigI[i][j] = I[i][j]*TMath::Sqrt(1./Iaux[i][j] + 1./Iaux[5][j]);
+		//cout <<"Intensity pos " <<i+1 <<" det " << j+1 <<": " <<I[i][j] << " with sigma "<< I[i][j]*TMath::Sqrt(1/Iaux[i][j]+ 1./Iaux[5][j]) <<endl; //<<"  -- dividing " << trial <<" by " <<I[5][j] <<endl;
 	}
 	//cout << endl;
 }
@@ -227,6 +247,27 @@ double muFe = 0.656;
 double muPb = 1.7835;
 double mean1Fe, mean1Pb, mean2Fe, mean2Pb;
 
+
+double muXv[6], muXv_sig[6],muXh[2], meanv[2], meanh[2];
+for(int i=1; i<7; i++){
+	muXv[i] =  -ignoto1[i]*TMath::Cos(beta[i]);
+	muXv_sig[i] = ignoto1_sig[i]*TMath::Cos(beta[i]);
+}
+
+double * value = muXv;
+double * error = muXv_sig;
+
+double *media;
+media = WMean(value, error,6);
+
+cout << "Media: "<< media[0] << " errore: " <<media[1] <<endl;
+
+
+
+
+ofstream myfile1;
+myfile1.open ("00horizontal.txt");
+myfile1 <<"// This file contains x*mu; sig_x*mu for the horizontal stripe" <<endl;
 ofstream myfile;
   myfile.open ("00vertical.txt");
   myfile <<"// This file contains x*mu; sig_x*mu for the vertical stripe" <<endl;
@@ -247,16 +288,12 @@ myfile.close();
 
 cout << endl;
 
-ofstream myfile1;
-myfile1.open ("00horizontal.txt");
-myfile1 <<"// This file contains x*mu; sig_x*mu for the horizontal stripe" <<endl;
-
 for(int i=0; i<3; i++){
 	x2Fe[i] = -1* TMath::Cos(beta[7])*ignoto2[i]/muFe;
 	x2Pb[i] = -1* TMath::Cos(beta[7])*ignoto2[i]/muPb;
 	mean2Fe += x2Fe[i];
 	mean2Pb += x2Pb[i];
-	cout<< "x2Fe: " <<x2Fe[i] <<" x2Pb: " <<x2Pb[i] <<endl;
+	//cout<< "x2Fe: " <<x2Fe[i] <<" x2Pb: " <<x2Pb[i] <<endl;
 
 	x2Fe[i] = x2Fe[i]*muFe;
 	ignoto2_sig[i] = ignoto2_sig[i]*TMath::Cos(beta[i]);
@@ -295,17 +332,17 @@ for(int i=0; i<8; i++){
 
 /////////////// 2D histogram 
 
-TH2F* IntMap = new TH2F("IntMap","", 5, 0, 5, 7, 1, 8);
+TH2F* IntMap = new TH2F("IntMap","I/I_{0}", 5, 0, 5, 7, 1, 8);
 
 for(int i=0; i<5; i++){
-	for(int j=1; j< 8; j++){
-	IntMap->SetBinContent(i+1,j,I[i][j]);
+	for(int j=7; j>0; j--){
+	IntMap->SetBinContent(i+1,8-j,I[i][j]);
 	string tempx = to_string(i+1);
 	string tempy = to_string(j+1);
 	const char* numx = tempx.c_str();
 	const char* numy = tempy.c_str();
 	IntMap->GetXaxis()->SetBinLabel(i+1,numx);
-	IntMap->GetYaxis()->SetBinLabel(j,numy);
+	IntMap->GetYaxis()->SetBinLabel(8-j,numy);
 	//if(j==4){cout << "Integral: "<< I[i][j]<<endl;}
 	}
 }
@@ -317,9 +354,44 @@ TCanvas *c456 = new TCanvas("c456");
 IntMap->Draw("colz");
 
 
+///////////// Intensity values output
 
+ofstream IntStream;
+IntStream.open("Intensity.txt");
+myfile.open("Intensity_sig.txt");
+IntStream<<"//This file contains intensity values for the Black Box" <<endl;
+IntStream <<"//On the lines the position 1 to 5; line 6 is intensity without sample I0" <<endl;
+IntStream<<"Det1	Det1_sig	Det2	Det2_sig	Det3	Det3_sig	Det4	Det4_sig	\
+Det5	Det5_sig	Det6	Det6_sig	Det7	Det7_sig	Det8	Det8_sig" <<endl;
+for(int i=0; i<6; i++){
+	for(int j=0; j<8; j++){
+	//IntStream <<j <<"	";
+	IntStream<<Iaux[i][j] <<"	";
+	myfile<<TMath::Sqrt(Iaux[i][j]) <<"	";
+	if(j==7) {IntStream<<endl; myfile <<endl;}
+	}
+}
+IntStream.close();
+myfile.close();
 
+IntStream.open("Intensity_Relative.txt");
+myfile1.open("Intensity_Relative_sig.txt");
+IntStream<<"//This file contains intensity values for the Black Box" <<endl;
+IntStream <<"//On the lines the position 1 to 5; line 6 is intensity without sample I0" <<endl;
+IntStream<<"Det1	Det2	Det3	Det4	\
+Det5	Det6	Det7	Det8" <<endl;
+for(int i=0; i<6; i++){
+	for(int j=0; j<8; j++){
+	//IntStream <<j <<"	";
+	IntStream<<I[i][j] <<"	";
+	myfile1 <<sigI[i][j] <<"	";
+	if(j==7) {IntStream<<endl; myfile1<<endl;}
+	}
+}
+IntStream.close();
+myfile1.close();
 
+day1[7].spectrum->Draw();
 }
 
 

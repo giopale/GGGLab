@@ -1,0 +1,9 @@
+//This file contains intensity values for the Black Box
+//On the lines the position 1 to 5; line 6 is intensity without sample I0
+Det1	Det1_sig	Det2	Det2_sig	Det3	Det3_sig	Det4	Det4_sig	Det5	Det5_sig	Det6	Det6_sig	Det7	Det7_sig	Det8	Det8_sig
+24344	138	839	3978	2290	5105	3525	1185	
+24153	143	848	3970	2324	5196	3306	879	
+11124	65	481	1784	1149	2308	1529	699	
+24001	121	846	4108	2349	5093	3241	815	
+24239	113	850	4137	2248	5167	3429	1212	
+1952	146	561	4347	284	4886	780	741	
