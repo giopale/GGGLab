@@ -29,18 +29,22 @@ double invCalib(double y, float m, float q){
 }
 
 ////////////////////////   AUTO SEARCH FITTING METHOD //////////////////////////////
-H_data CalibAnalysis(H_data in_data, int graphs = 0, int low_cut = 400, int scale = 1, int basetime = 1800){
+
+
+H_data CalibAnalysis(H_data g_data, int graphs = 0, int low_cut = 400, int scale = 1, int basetime = 1800){
 gStyle->SetTitleFontSize(.08);
 
 //Retrieving all H_data structures from files
 
-int dgtz = in_data.dgtz;
-int chan =in_data.ch;
-const char* filename = in_data.filename;
+
+
+int dgtz = g_data.dgtz;
+int chan =g_data.ch;
+const char* filename = g_data.filename;
 
 
 H_data h1_data = getHistoForChannelFromTree(filename,dgtz,chan,1000,low_cut,26000);		//DETECTOR ;
-H_data out_data = in_data;
+H_data out_data = g_data;
 
 //setting the calibration graph title:
 string tempTitle(filename);
@@ -48,6 +52,8 @@ string Tree = " * Tree=" + to_string(dgtz)+ " * ";
 string Bran = " Ch=" + to_string(chan);
 tempTitle = tempTitle + Tree + Bran +" calibration";
 const char* calibTitle = tempTitle.c_str();
+
+
 
 //Message to the people
 if(h1_data.spectrum){cout << "Beginning calibration..." << endl; }
@@ -58,7 +64,7 @@ if(scale == 1){
 	h0->Scale(basetime/h1_data.acqtime);
 	string newtitle = h0->GetTitle();
 	newtitle = newtitle + " norm. to " + to_string(basetime) + "s";
-	h0->SetTitle(newtitle.c_str());
+	h0->SetTitle("");
 }
 
 // search the peaks
@@ -110,7 +116,9 @@ if(r==0){
 	// get the fit parameters
 	float m = fitfun->GetParameter(1);
 	float q = fitfun->GetParameter(0);
-	cout<<"Calibration status: CONVERGED; " <<"Exit parameters: "<<" m:  " << m <<" q: " <<q  <<endl;
+
+
+	cout<<"Calibration status: CONVERGED; " <<"Exit parameters: "<<" m:  " <<" q: " <<q <<endl;
 	if(m>0){	
 	// call the function to calibrate the histogram
 		if(err ==0) {CalibrateHisto(h0,m,q);}
@@ -126,6 +134,7 @@ if(r==0){
 	h1_data.m = m;
 	h1_data.q = q;
 
+
 	
 	//gaussian fit for resolution determination
 	double p1 = Calib(na_bin[0],m,q);
@@ -135,9 +144,12 @@ if(r==0){
 	TF1* f1 = new TF1("gaussiana","gaus",down,up);
 	TFitResultPtr fp1 = h1_data.spectrum->Fit(f1,"RQ");
 	double sigma = f1->GetParameter(2);
+	double s = f1->GetParError(2);
+	double sr= s*2.355;
 	double resol = 2.355*sigma;
 	if (c126) { c126->Close(); gSystem->ProcessEvents();}
 	h1_data.resolution =resol;
+	h1_data.sigmares = sr;
 
 	
 	
@@ -174,18 +186,20 @@ return out_data;
 
 
 ////////////////////////   MANUAL PEAKS FITTING METHOD //////////////////////////////
-H_data CalibAnalysisMod(H_data in_data, int graphs = 0, int low_cut = 400, int scale = 1, int basetime = 1800, float peak1 = -1, float peak2 = -1){
+H_data CalibAnalysisMod(H_data g_data, int graphs = 0, int low_cut = 400, int scale = 1, int basetime = 1800, float peak1 = -1, float peak2 = -1){
 gStyle->SetTitleFontSize(.08);
 
 //Retrieving all H_data structures from files
 
-int dgtz = in_data.dgtz;
-int chan =in_data.ch;
-const char* filename = in_data.filename;
+
+
+int dgtz = g_data.dgtz;
+int chan =g_data.ch;
+const char* filename = g_data.filename;
 
 
 H_data h1_data = getHistoForChannelFromTree(filename,dgtz,chan,1000,low_cut,26000);		//DETECTOR ;
-H_data out_data = in_data;
+H_data out_data = g_data;
 
 //setting the calibration graph title:
 string tempTitle(filename);
@@ -210,8 +224,8 @@ if(scale == 1){
 
 int nPeaks = 1;
 if(peak2>0){nPeaks +=1;}
-double na_bin_data[2] = {peak1, peak2};
-double *na_bin = na_bin_data;
+double na_bg_data[2] = {peak1, peak2};
+double *na_bin = na_bg_data;
 
 //error messages
 int err =0;
@@ -275,7 +289,7 @@ if(na_bin[1]<0){
 			h0->Draw();
 			graphErr1->SetMarkerStyle(47);
 			graphErr1->SetMarkerSize(20);
-			graphErr1->SetTitle(calibTitle);
+			graphErr1->SetTitle("");
 			graphErr1->SetMarkerSize(1.5);
 			graphErr1->GetXaxis()->SetTitle("Channel");
 			graphErr1->GetYaxis()->SetTitle("Energy [keV]");
@@ -300,7 +314,7 @@ else{
 		}
 	if(r==0){	
 		graphErr->SetMarkerStyle(47);
-		graphErr->SetTitle(calibTitle);
+		//graphErr->SetTitle(calibTitle);
 
 		cout<<"Calibration status: TWO POINTS; " <<"Exit parameters: "<<" m:  " << m <<" q: " <<q  <<endl;
 		if(m>0){	
@@ -368,18 +382,18 @@ return out_data;
 }
 
 ////////////////////////   MANUAL PEAKS FITTING METHOD //////////////////////////////
-H_data JustFill(H_data in_data, int graphs = 0, int low_cut = 0, int scale = 1, int basetime = 1800){
+H_data JustFill(H_data g_data, int graphs = 0, int low_cut = 0, int scale = 1, int basetime = 1800){
 gStyle->SetTitleFontSize(.08);
 
 //Retrieving all H_data structures from files
 
-int dgtz = in_data.dgtz;
-int chan =in_data.ch;
-const char* filename = in_data.filename;
+int dgtz = g_data.dgtz;
+int chan =g_data.ch;
+const char* filename = g_data.filename;
 
 
 H_data h1_data = getHistoForChannelFromTree(filename,dgtz,chan,1000,low_cut,26000);		//DETECTOR ;
-H_data out_data = in_data;
+H_data out_data = g_data;
 
 //setting the calibration graph title:
 string tempTitle(filename);

@@ -44,6 +44,7 @@ struct H_data
 	UInt_t ch;
 	ULong64_t acqtime;
 	ULong64_t resolution;
+	ULong64_t sigmares;
 	TF1* calibfun;
 	double m;
 	double q;
