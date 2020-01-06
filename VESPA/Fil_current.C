@@ -93,13 +93,15 @@ void Fil_current(){
 	double C0 = TMath::Power(gamma/(epsilon*alpha*TMath::Power(TMath::Pi(),2)* TMath::Power(r,3)),1./2.8);
 	double C = TMath::Power(gamma/(eps*alpha*TMath::Power(TMath::Pi(),2)* TMath::Power(r,3)),1./2.8);
 
+	double actualTemp0 = C*TMath::Power(6.5,2./2.8);
+	cout << "Actula wire temperature [K]: " <<actualTemp0 <<endl;
 	for(int i=0; i<i0.size(); i++){
 			temps0.push_back(C0*TMath::Power(i0[i],2./2.8));
 			temps.push_back(C*TMath::Power(i0[i],2./2.8));
 
 		}
 
-	auto c20 = new TCanvas("c20","MyNiceCanvas");
+	auto c20 = new TCanvas("c20","MyPrecious");
 	auto d00 = new TGraph(i0.size(), &i0[0],&temps0[0]);
 	auto d0 = new TGraph(i0.size(), &i0[0],&temps[0]);
 
