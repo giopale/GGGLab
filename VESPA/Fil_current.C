@@ -13,14 +13,14 @@ vector<double> range(double min, double max, size_t N) {
 
 double Curr(double *x){
 	double xx = x[0];
-	double epsilon, alpha, gamma, r, L, pi;
+	double epsilon, alpha, rho, r, L, pi;
 	epsilon = .3;
 	alpha = 5.64e-8;
-	gamma = 6.2e-11;
+	rho = 6.2e-11;
 	r = 1.25e-4;
 	L = 0.1;
 	pi = TMath::Pi();
-	double A =  (TMath::Pi() * TMath::Power(2* epsilon* alpha, 3./13) * TMath::Power(r,23./13))/(TMath::Power(gamma,10./13)*TMath::Power(L,7./13));
+	double A =  (TMath::Pi() * TMath::Power(2* epsilon* alpha, 3./13) * TMath::Power(r,23./13))/(TMath::Power(rho,10./13)*TMath::Power(L,7./13));
 	double f = (A*TMath::Power(xx,0.7/1.3));
 	return f;
 
@@ -40,13 +40,13 @@ void Fil_current(){
 	TGraph *c = new TGraph(v.size(),&v[0],&ith[0]);
 	c->SetLineColor(4);
 
-	double epsilon, alpha, gamma, r, L, pi;
+	double epsilon, alpha, rho, r, L, pi;
 	epsilon = .3;
 	alpha = 5.64e-8;
-	gamma = 6.2e-11;
+	rho = 6.2e-11;
 	r = 1.25e-4;
 	L = 0.1;
-	double A =  (TMath::Pi() * TMath::Power(2* epsilon* alpha, 3./13) * TMath::Power(r,23./13))/(TMath::Power(gamma,10./13)*TMath::Power(L,7./13));
+	double A =  (TMath::Pi() * TMath::Power(2* epsilon* alpha, 3./13) * TMath::Power(r,23./13))/(TMath::Power(rho,10./13)*TMath::Power(L,7./13));
 
 	auto c1 = new TCanvas("c1","MyCanvas");
 	TGraph *g = new TGraph("Current.txt");
@@ -65,7 +65,7 @@ void Fil_current(){
 	double Aexp_sig = f0->GetParError(0);
 	cout << "Aexp = " << Aexp <<endl;
 
-	double B = TMath::Power((TMath::Power(gamma,10) * TMath::Power(L,7))/(TMath::Power(TMath::Pi() ,13) * TMath::Power(r,23) * TMath::Power(2*alpha,3)), 1./3.);
+	double B = TMath::Power((TMath::Power(rho,10) * TMath::Power(L,7))/(TMath::Power(TMath::Pi() ,13) * TMath::Power(r,23) * TMath::Power(2*alpha,3)), 1./3.);
 	double eps = B* TMath::Power(Aexp,13./3.);
 	double eps_sigma = 13/3 *eps * Aexp_sig / Aexp;
 	cout <<"eps exp = " << eps << " ± " <<eps_sigma <<endl;	
@@ -85,16 +85,20 @@ void Fil_current(){
 
 	// >>>>>>>>>>>>>>>> Temperature Curve
 
-	vector<double> i0 = range(0,8.9,10000);
-	double i00[2] = {0,10};
+	vector<double> i0 = range(0,13,10000);
+	double i00[2] = {0,13};
 	double melting[2] = {3695,3695};
 	vector<double> temps, temps0;
 
-	double C0 = TMath::Power(gamma/(epsilon*alpha*TMath::Power(TMath::Pi(),2)* TMath::Power(r,3)),1./2.8);
-	double C = TMath::Power(gamma/(eps*alpha*TMath::Power(TMath::Pi(),2)* TMath::Power(r,3)),1./2.8);
+	double g0 = 459.74695;
+	double C0 = g0 * TMath::Power(epsilon,-10./28.);
+	double C = g0 * TMath::Power(eps, -10./28.);
+	// double C0 = TMath::Power(rho/(epsilon*alpha*TMath::Power(TMath::Pi(),2)* TMath::Power(r,3)),1./2.8);
+	// double C = TMath::Power(rho/(eps*alpha*TMath::Power(TMath::Pi(),2)* TMath::Power(r,3)),10./28.);
 
+	cout << "Lambda constant - Theoretical: " << C0 << " Experimental: " <<C <<endl;
 	double actualTemp0 = C*TMath::Power(6.5,2./2.8);
-	cout << "Actula wire temperature [K]: " <<actualTemp0 <<endl;
+	cout << "Actual wire temperature [K]: " <<actualTemp0 <<endl;
 	for(int i=0; i<i0.size(); i++){
 			temps0.push_back(C0*TMath::Power(i0[i],2./2.8));
 			temps.push_back(C*TMath::Power(i0[i],2./2.8));
@@ -116,7 +120,7 @@ void Fil_current(){
 	d0->GetYaxis()->SetTitle("Temperature [K]");
 	d0->GetXaxis()->SetTitleSize(.045);
 	d0->GetYaxis()->SetTitleSize(.045);
-	d0->GetXaxis()->SetRangeUser(0,8.8);
+	d0->GetXaxis()->SetRangeUser(0,11.5);
 
 	d0->SetLineColor(2);
 	d0->GetYaxis()->SetTitleOffset(.98);
