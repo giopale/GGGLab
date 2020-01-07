@@ -129,7 +129,6 @@ void Fil_current(){
 	d1->Draw("same");
 	d00->Draw("same");
 
-	auto leg1 = new TLegend(0.55,0.25,0.9,0.1);
 	leg1->AddEntry(d0,"Temperature, exp. trend");
 	leg1->AddEntry(d00,"Temperature, th. trend");
 	leg1->AddEntry(d1, "Tungsten melting point");
