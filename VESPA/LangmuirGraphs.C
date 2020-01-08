@@ -79,7 +79,7 @@ void LangmuirGraphs(){
 	leg2->AddEntry(ivpr,"Close probe","ap");
 	leg2->Draw();
 
-	c2->Print("I_Vp.eps");
+	c3->Print("I_Vp.eps");
 
 
 }

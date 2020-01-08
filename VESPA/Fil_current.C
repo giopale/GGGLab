@@ -93,12 +93,17 @@ void Fil_current(){
 	double g0 = 459.74695;
 	double C0 = g0 * TMath::Power(epsilon,-10./28.);
 	double C = g0 * TMath::Power(eps, -10./28.);
+
+	auto fC = new TF1("fC","787.029*TMath::Power(x,2./2.8)");
 	// double C0 = TMath::Power(rho/(epsilon*alpha*TMath::Power(TMath::Pi(),2)* TMath::Power(r,3)),1./2.8);
 	// double C = TMath::Power(rho/(eps*alpha*TMath::Power(TMath::Pi(),2)* TMath::Power(r,3)),10./28.);
 
 	cout << "Lambda constant - Theoretical: " << C0 << " Experimental: " <<C <<endl;
-	double actualTemp0 = C*TMath::Power(6.5,2./2.8);
-	cout << "Actual wire temperature [K]: " <<actualTemp0 <<endl;
+	// double actualTemp0 = C*TMath::Power(6.5,2./2.8);
+	double actualTemp0 = fC->Eval(6.5);
+	cout << "Actual wire temperature @ 6.5 A [K]: " <<actualTemp0 <<endl;
+	cout << "Actual wire temperature @ 6.1 A [K]: " <<fC->Eval(6.1) <<endl;
+	cout << "Actual wire temperature @ 6.7 A [K]: " <<fC->Eval(6.7) <<endl;
 	for(int i=0; i<i0.size(); i++){
 			temps0.push_back(C0*TMath::Power(i0[i],2./2.8));
 			temps.push_back(C*TMath::Power(i0[i],2./2.8));
@@ -128,7 +133,8 @@ void Fil_current(){
 	d0->Draw();
 	d1->Draw("same");
 	d00->Draw("same");
-
+	
+	auto leg1 = new TLegend(0.5,0.25,0.9,0.1);
 	leg1->AddEntry(d0,"Temperature, exp. trend");
 	leg1->AddEntry(d00,"Temperature, th. trend");
 	leg1->AddEntry(d1, "Tungsten melting point");
@@ -136,7 +142,7 @@ void Fil_current(){
 	gStyle->SetLegendTextSize(0.04);
 
 	leg1->Draw();
-	c20->Print("TempCurrent.eps");
+	c20->Print("TempCurrent.pdf");
 }
 
 
